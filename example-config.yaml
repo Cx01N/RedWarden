@@ -13,7 +13,7 @@
 verbose: True
 
 # Print debugging output that includes HTTP request/response trace. Default: False
-debug: False
+debug: True
 
 # Redirect RedWarden's output to file. Default: stdout.
 # Creates a file in the same directory that this config file is situated.
@@ -55,61 +55,22 @@ redelk_backend_name_decoy: decoy
 # Default: False
 tee: True
 
-
-#
-# Ports on which RedWarden should bind & listen
-#
 port:
   - 80/http
   - 443/https
 
-#
-# SSL certificate CAcert (pem, crt, cert) and private key CAkey
-#
-ssl_cacert: /etc/letsencrypt/live/attacker.com/fullchain.pem
-ssl_cakey: /etc/letsencrypt/live/attacker.com/privkey.pem
+profile: amazon.profile
 
+ssl_cacert: /home/kali/Empire-Sponsors/empire/server/data/empire-chain.pem
+ssl_cakey: /home/kali/Empire-Sponsors/empire/server/data/empire-priv.key
 
-#
-# Drop invalid HTTP requests
-#
-# If a stream that doesn't resemble valid HTTP protocol reaches RedWarden listener, 
-# should we drop it or process it? By default we drop it.
-#
-# Default: True
-#
-drop_invalid_http_requests: True
-
-
-#
-# Path to the Malleable C2 profile file. 
-# If not given, most of the request-validation logic won't be used.
-#
-profile: malleable.profile
-
-
-#
-# (Required) Address where to redirect legitimate inbound beacon requests.
-# A.k.a. TeamServer's Listener bind address, in a form of:
-#       [inport:][http(s)://]host:port
-#
-# If RedWarden was configured to listen on more than one port, specifying "inport" will 
-# help the plugin decide to which teamserver's listener redirect inbound request. 
-#
-# If 'inport' values are not specified in the below option (teamserver_url) the script
-# will pick destination teamserver at random.
-#
-# Having RedWarden listening on only one port does not mandate to include the "inport" part.
-# This field can be either string or list of strings.
-#
-teamserver_url: 
-  - 1.2.3.4:5555
-
+teamserver_url:
+  - http://192.168.1.78:80
 
 #
 # Report only instead of actually dropping/blocking/proxying bad/invalid requests.
 # If this is true, will notify that the request would be block if that option wouldn't be
-# set. 
+# set.
 #
 # Default: False
 #
@@ -143,14 +104,14 @@ throttle_down_peer_logging:
 
 
 #
-# What to do with the request originating not conforming to Beacon, whitelisting or 
-# ProxyPass inclusive statements: 
-#   - 'redirect' it to another host with (HTTP 301), 
+# What to do with the request originating not conforming to Beacon, whitelisting or
+# ProxyPass inclusive statements:
+#   - 'redirect' it to another host with (HTTP 301),
 #   - 'reset' a TCP connection with connecting client
-#   - 'proxy' the request, acting as a reverse-proxy against specified action_url 
+#   - 'proxy' the request, acting as a reverse-proxy against specified action_url
 #       (may be dangerous if client fetches something it shouldn't supposed to see!)
 #
-# Valid values: 'reset', 'redirect', 'proxy'. 
+# Valid values: 'reset', 'redirect', 'proxy'.
 #
 # Default: redirect
 #
@@ -158,8 +119,8 @@ drop_action: redirect
 
 
 #
-# If someone who is not a beacon hits the proxy, or the inbound proxy does not meet 
-# malleable profile's requirements - where we should proxy/redirect his requests. 
+# If someone who is not a beacon hits the proxy, or the inbound proxy does not meet
+# malleable profile's requirements - where we should proxy/redirect his requests.
 # The protocol HTTP/HTTPS used for proxying will be the same as originating
 # requests' protocol. Redirection in turn respects protocol given in action_url.
 #
@@ -169,7 +130,7 @@ drop_action: redirect
 #
 # Default: https://google.com
 #
-action_url: 
+action_url:
   - https://google.com
 
 
@@ -177,20 +138,20 @@ action_url:
 # ProxyPass alike functionality known from mod_proxy.
 #
 # If inbound request matches given conditions, proxy that request to specified host,
-# fetch response from target host and return to the client. Useful when you want to 
+# fetch response from target host and return to the client. Useful when you want to
 # pass some requests targeting for instance attacker-hosted files onto another host, but
 # through the one protected with malleable_redirector.
 #
 # Protocol used for ProxyPass will match the one from originating request unless specified explicitely.
 # If host part contains http:// or https:// schema - that schema will be used.
-# 
+#
 # Syntax:
 #   proxy_pass:
 #     - /url_to_be_passed example.com
 #     - /url_to_be_passed_onto_http http://example.com
 #
 # The first parameter 'url' is a regex (case-insensitive). Must start with '/'.
-# The regex begin/end operators are implied and will constitute following regex to be 
+# The regex begin/end operators are implied and will constitute following regex to be
 # matched against inbound request's URL:
 #     '^/' + url_to_be_passed + '$'
 #
@@ -201,16 +162,16 @@ action_url:
 #   Rules:
 #     a) Entire URL to be substituted for proxy pass:
 #       proxy_pass:
-#           - /dl/.+   https://localhost:8888/   
+#           - /dl/.+   https://localhost:8888/
 #                ====> will redirect to https://localhost:8888/
 #
 #     b) Only host to be substituted for proxy pass:
 #       proxy_pass:
-#           - /dl/.+   localhost:8888   
+#           - /dl/.+   localhost:8888
 #                ====> will redirect to https://localhost:8888/dl/file-to-be-served.txt
 #
 # Following options are supported:
-#   - nodrop  - Process this rule at first, before evaluating any DROP-logic. 
+#   - nodrop  - Process this rule at first, before evaluating any DROP-logic.
 #               Does not let processed request to be dropped.
 #
 # Default: No proxy pass rules.
@@ -225,19 +186,19 @@ proxy_pass:
 #
 # If set, removes all HTTP headers sent by Client that are not expected by Teamserver according
 # to the supplied Malleable profile and its client { header ... } section statements. Some CDNs/WebProxy
-# providers such as CloudFlare may add tons of their own metadata headers (like: CF-IPCountry, CF-RAY, 
+# providers such as CloudFlare may add tons of their own metadata headers (like: CF-IPCountry, CF-RAY,
 # CF-Visitor, CF-Request-ID, etc.) that can make Teamserver unhappy about inbound HTTP Request which could
-# cause its refusal. 
+# cause its refusal.
 #
 # We can strip all of these superfluous, not expected by Teamserver HTTP headers delivering a vanilla plain
 # request. This is recommended setting in most scenarios.
 #
-# Do note however, that Teamserver by itself ignores superfluous headers it receives in requests, as long as they 
+# Do note however, that Teamserver by itself ignores superfluous headers it receives in requests, as long as they
 # don't compromise integrity of the malleable transaction.
 #
 # Default: True
 #
-remove_superfluous_headers: True
+remove_superfluous_headers: False
 
 
 #
@@ -272,14 +233,14 @@ whitelisted_ip_addresses:
 # N requests to the Teamserver on a previous occassions.
 #
 # This whitelist gets cleared along with RedWarden being terminated. It is only held up in script's memory.
-# 
+#
 # Paramters:
 #   - number_of_valid_http_get_requests: defines number of successful http-get requests (polling Teamserver)
 #                                        that determine whether Peer can be trusted.
 #   - number_of_valid_http_post_requests: defines number of successful http-post requests (sending command
 #                                         results to the TS) that determine whether Peer can be trusted.
 #
-# Value of 0 denotes disabled counting of a corresponding type of requests. 
+# Value of 0 denotes disabled counting of a corresponding type of requests.
 # Function disabled if configuration option is missing.
 #
 # Default: (dynamic whitelist enabled)
@@ -311,7 +272,7 @@ ip_addresses_blacklist_file: data/banned_ips.txt
 
 
 #
-# Specifies external list of keywords to ban during reverse-IP lookup, User-Agents or 
+# Specifies external list of keywords to ban during reverse-IP lookup, User-Agents or
 # HTTP headers analysis stage. The file can contain lines beginning with '#' to mark comments.
 #
 # Default: data/banned_words.txt
@@ -330,11 +291,11 @@ override_banned_agents_file: data/banned_words_override.txt
 
 
 #
-# Ban peers based on their IPv4 address' resolved ISP/Organization value or other details. 
+# Ban peers based on their IPv4 address' resolved ISP/Organization value or other details.
 # Whenever a peer connects to our proxy, we'll take its IPv4 address and use one of the specified
-# APIs to collect all the available details about the address. Whenever a banned word 
+# APIs to collect all the available details about the address. Whenever a banned word
 # (of a security product) is found in those details - peer will be banned.
-# List of API keys for supported platforms are specified in ''. If there are no keys specified, 
+# List of API keys for supported platforms are specified in ''. If there are no keys specified,
 # only providers that don't require API keys will be used (e.g. ip-api.com, ipapi.co)
 #
 # This setting affects execution of policy:
@@ -346,7 +307,7 @@ verify_peer_ip_details: True
 
 
 #
-# Specifies a list of API keys for supported API details collection platforms. 
+# Specifies a list of API keys for supported API details collection platforms.
 # If 'verify_peer_ip_details' is set to True and there is at least one API key given in this option, the
 # proxy will collect details of inbound peer's IPv4 address and verify them for occurences of banned words
 # known from various security vendors. Do take a note that various API details platforms have their own
@@ -363,24 +324,24 @@ verify_peer_ip_details: True
 #
 # Default: empty dictionary
 #
-ip_details_api_keys: 
+ip_details_api_keys:
   #ipgeolocation_io: 0123456789abcdef0123456789abcdef
   ipgeolocation_io:
 
 
 #
-# Restrict incoming peers based on their IP Geolocation information. 
-# Available only if 'verify_peer_ip_details' was set to True. 
+# Restrict incoming peers based on their IP Geolocation information.
+# Available only if 'verify_peer_ip_details' was set to True.
 # IP Geolocation determination may happen based on the following supported characteristics:
-#   - organization, 
-#   - continent, 
-#   - continent_code, 
-#   - country, 
-#   - country_code, 
-#   - city, 
+#   - organization,
+#   - continent,
+#   - continent_code,
+#   - country,
+#   - country_code,
+#   - city,
 #   - timezone
 #
-# The Peer will be served if at least one geolocation condition holds true for him 
+# The Peer will be served if at least one geolocation condition holds true for him
 # (inclusive/alternative arithmetics).
 #
 # If no determinants are specified, IP Geolocation will not be taken into consideration while accepting peers.
@@ -395,10 +356,10 @@ ip_details_api_keys:
 #    ('EU', 'Europe'),
 #    ('NA', 'North america'),
 #    ('OC', 'Oceania'),
-#    ('SA', 'South america)' 
+#    ('SA', 'South america)'
 #
 # Proper IP Lookup details values can be established by issuing one of the following API calls:
-#   $ curl -s 'https://ipapi.co/TARGET-IP-ADDRESS/json/' 
+#   $ curl -s 'https://ipapi.co/TARGET-IP-ADDRESS/json/'
 #   $ curl -s 'http://ip-api.com/json/TARGET-IP-ADDRESS'
 #
 # The organization/isp/as/asn/org fields will be merged into a common organization list of values.
@@ -426,7 +387,7 @@ policy:
   # [IP: ALLOW, reason:2] Peer's IP was added dynamically to a whitelist based on a number of allowed requests
   allow_dynamic_peer_whitelisting: True
   # [IP: DROP, reason:1] inbound User-Agent differs from the one defined in C2 profile.
-  drop_invalid_useragent: True
+  drop_invalid_useragent: False
   # [IP: DROP, reason:2] HTTP header name contained banned word
   drop_http_banned_header_names: True
   # [IP: DROP, reason:3] HTTP header value contained banned word:
@@ -436,19 +397,19 @@ policy:
   # [IP: DROP, reason:4e] Peer's IP geolocation metadata contained banned keyword! Peer banned in generic fashion.
   drop_ipgeo_metadata_containing_banned_keywords: True
   # [IP: DROP, reason:5] HTTP request did not contain expected header
-  drop_malleable_without_expected_header: True
+  drop_malleable_without_expected_header: False
   # [IP: DROP, reason:6] HTTP request did not contain expected header value:
-  drop_malleable_without_expected_header_value: True
+  drop_malleable_without_expected_header_value: False
   # [IP: DROP, reason:7] HTTP request did not contain expected (metadata|id|output) section header:
   drop_malleable_without_expected_request_section: True
   # [IP: DROP, reason:8] HTTP request was expected to contain (metadata|id|output) section with parameter in URI:
   drop_malleable_without_request_section_in_uri: True
   # [IP: DROP, reason:9] Did not found append pattern (this logic is known to cause troubles, use with caution):
-  drop_malleable_without_prepend_pattern: False
+  drop_malleable_without_prepend_pattern: True
   # [IP: DROP, reason:10] Did not found append pattern (this logic is known to cause troubles, use with caution):
-  drop_malleable_without_apppend_pattern: False
+  drop_malleable_without_apppend_pattern: True
   # [IP: DROP, reason:11] Requested URI does not aligns any of Malleable defined variants:
-  drop_malleable_unknown_uris: True
+  drop_malleable_unknown_uris: False
   # [IP: DROP, reason:12] HTTP request was expected to contain <> section with URI-append containing prepend/append fragments
   drop_malleable_with_invalid_uri_append: True
 
@@ -459,9 +420,9 @@ policy:
 # If RedWarden validates inbound request's HTTP headers, according to policy drop_malleable_without_expected_header_value:
 #   "[IP: DROP, reason:6] HTTP request did not contain expected header value:"
 #
-# and detects some header is missing or was overwritten along the wire, the request will be dropped. 
+# and detects some header is missing or was overwritten along the wire, the request will be dropped.
 #
-# We can relax this policy a bit however, since there are situations in which Cache systems (such as Cloudflare) could tamper with our 
+# We can relax this policy a bit however, since there are situations in which Cache systems (such as Cloudflare) could tamper with our
 # requests thus breaking Malleable contracts. What we can do is to specify list of headers, that should be overwritten back to their values
 # defined in provided Malleable profile.
 #
@@ -505,8 +466,8 @@ policy:
 #              "headerNameN" : "headerValueN",
 #         },
 #     }
-# 
-# If "peerIP" is empty (or was not given), RedWarden will try to extract peer's IP from HTTP 
+#
+# If "peerIP" is empty (or was not given), RedWarden will try to extract peer's IP from HTTP
 # headers such as (X-Forwarded-For, CF-Connecting-IP, X-Real-IP, etc.). If no IP will be present
 # in headers, an error will be returned.:
 #
@@ -517,10 +478,10 @@ policy:
 #     }
 #
 # RedWarden will take any non-empty field from a given JSON and evaluate it as it would do
-# under currently provided configuration and all the knowledge it possesses. 
+# under currently provided configuration and all the knowledge it possesses.
 # The response will contain following JSON:
 #
-#    { 
+#    {
 #        "action": "allow|drop",
 #        "peerIP" : "returned-peerIP",
 #        "ipgeo" : {ip-geo-metadata-extracted}
@@ -553,4 +514,6 @@ policy:
 #
 # Default: Turned off / not available
 #
-#malleable_redirector_hidden_api_endpoint: /12345678-9abc-def0-1234-567890abcdef
+#malleable_redirector_hidden_api_endpoint: /12345678-9abc-def0-1234-567890abcde
+repair_these_headers:
+  - Accept-Encoding
