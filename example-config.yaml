@@ -13,7 +13,7 @@
 verbose: True
 
 # Print debugging output that includes HTTP request/response trace. Default: False
-debug: True
+debug: False
 
 # Redirect RedWarden's output to file. Default: stdout.
 # Creates a file in the same directory that this config file is situated.
@@ -59,7 +59,7 @@ port:
   - 80/http
   - 443/https
 
-profile: amazon.profile
+profile: malleable.profile
 
 ssl_cacert: /home/kali/Empire-Sponsors/empire/server/data/empire-chain.pem
 ssl_cakey: /home/kali/Empire-Sponsors/empire/server/data/empire-priv.key
@@ -403,7 +403,7 @@ policy:
   # [IP: DROP, reason:7] HTTP request did not contain expected (metadata|id|output) section header:
   drop_malleable_without_expected_request_section: True
   # [IP: DROP, reason:8] HTTP request was expected to contain (metadata|id|output) section with parameter in URI:
-  drop_malleable_without_request_section_in_uri: True
+  drop_malleable_without_request_section_in_uri: False
   # [IP: DROP, reason:9] Did not found append pattern (this logic is known to cause troubles, use with caution):
   drop_malleable_without_prepend_pattern: True
   # [IP: DROP, reason:10] Did not found append pattern (this logic is known to cause troubles, use with caution):
